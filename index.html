@@ -2470,7 +2470,7 @@ function unpackLegacy(d){
 }
 function readShared(){
   try{
-    var m=/^#s=([A-Za-z0-9_-]+)$/.exec(location.hash||'');
+    var m=/^#s=([A-Za-z0-9_-]+)$/.exec(location.hash||'')||/[?&]s=([A-Za-z0-9_-]+)/.exec(location.search||'');
     if(!m)return null;
     var a=toBytes(m[1]);
     if(a[0]===123)return unpackLegacy(JSON.parse(new TextDecoder().decode(a)));
@@ -2479,19 +2479,19 @@ function readShared(){
 }
 function getNotesFlag(){try{return localStorage.getItem(NKEY)==='1';}catch(e){return false;}}
 function shareLink(e){
-  var base=getBase().replace(/#.*$/,'');
-  return base+'#s='+fromBytes(packEntry(e,getNotesFlag()));
+  var base=getBase().replace(/[#?].*$/,'');
+  return base+'?s='+fromBytes(packEntry(e,getNotesFlag()));
 }
 function waMsg(e,link){return 'Séquence de handball « '+(e.title||'Sans titre')+' »\n'+link;}
 function waUrlFor(e,link){return 'https://wa.me/?text='+encodeURIComponent(waMsg(e,link));}
 function waHref(e){return waUrlFor(e,shareLink(e));}
 
 /* lien court (is.gd) */
-var SKEY='handball-short-v1', CKEY='handball-shortcache-v1';
+var SKEY='handball-short-v2', CKEY='handball-shortcache-v1';
 function canShort(){return !/claude|anthropic/i.test(location.hostname||'');}
 function shortOn(){
   if(!canShort())return false;
-  try{return localStorage.getItem(SKEY)!=='0';}catch(e){return true;}
+  try{return localStorage.getItem(SKEY)==='1';}catch(e){return false;}
 }
 function cacheGet(k){try{var m=JSON.parse(localStorage.getItem(CKEY)||'{}');return m[k]||null;}catch(e){return null;}}
 function cachePut(k,v){
@@ -2594,7 +2594,7 @@ $('#btnAddLink').addEventListener('click',function(){
   addFromText(raw,false);
 });
 function addFromText(raw,expanded){
-  var m=/#s=([A-Za-z0-9_-]+)/.exec(raw),d=null;
+  var m=/[#?&]s=([A-Za-z0-9_-]+)/.exec(raw),d=null;
   if(!m&&!expanded){
     var sm=/is\.gd\/([A-Za-z0-9_-]+)/i.exec(raw);
     if(sm){
@@ -2630,7 +2630,7 @@ $('#btnKeep').addEventListener('click',function(){
   try{
     localStorage.setItem(KEY,JSON.stringify({mode:S.mode,defense:S.defense,defLabels:S.defLabels,frames:S.frames,cur:0,trails:true,speed:1,loop:false,title:e.title,libId:e.id}));
   }catch(_){}
-  try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}
+  try{history.replaceState(null,'',location.pathname);}catch(_){}
   location.reload();
 });
 function startViewer(){
